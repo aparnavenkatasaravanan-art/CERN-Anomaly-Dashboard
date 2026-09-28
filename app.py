@@ -724,30 +724,17 @@ if "anomaly_score" in df.columns and "anomaly_label" in df.columns:
 
 st.markdown("### 📊 Comparison with Normal Events")
 
-comparison_features = [
-    "E1",
-    "E2",
-    "pt1",
-    "pt2",
-    "M"
-]
-
+comparison_features = ["E1", "E2", "pt1", "pt2", "M"]
 available_features = [
-    feature
-    for feature in comparison_features
+    feature for feature in comparison_features
     if feature in df.columns
 ]
 
 if available_features:
-
     comparison_data = []
-
-    normal_data = df[
-        df["anomaly_label"] == 1
-    ]
+    normal_data = df[df["anomaly_label"] == 1]
 
     for feature in available_features:
-
         anomaly_value = pd.to_numeric(
             event_data[feature],
             errors="coerce"
@@ -759,94 +746,64 @@ if available_features:
         ).dropna()
 
         if not normal_values.empty:
-
             comparison_data.append({
                 "Feature": feature,
                 "Selected Anomaly": anomaly_value,
                 "Normal Mean": normal_values.mean()
             })
 
-    comparison_df = pd.DataFrame(
-        comparison_data
-    )
-
-    st.dataframe(
-        comparison_df.round(4),
-        use_container_width=True,
-        hide_index=True
-    )
+    comparison_df = pd.DataFrame(comparison_data)
 
     if (
-    not comparison_df.empty
-    and "Feature" in comparison_df.columns
-    and "Selected Anomaly" in comparison_df.columns
-    and "Normal Mean" in comparison_df.columns
-):
-    comparison_long = comparison_df.melt(
-        id_vars="Feature",
-        value_vars=["Selected Anomaly", "Normal Mean"],
-        var_name="Type",
-        value_name="Value"
-    )
-
-    comparison_fig = px.bar(
-        comparison_long,
-        x="Feature",
-        y="Value",
-        color="Type",
-        barmode="group",
-        title="Selected Anomaly vs Normal Mean",
-        labels={
-            "Value": "Feature Value",
-            "Feature": "Collision Feature",
-            "Type": "Comparison"
-        }
-    )
-
-    comparison_fig.update_layout(
-        height=450,
-        legend_title="Comparison",
-        margin=dict(l=40, r=40, t=70, b=50)
-    )
-
-    st.plotly_chart(
-        comparison_fig,
-        use_container_width=True,
-        key="anomaly_normal_comparison"
-    )
-else:
-    st.info("Comparison data is not available for the selected event.")
-
-    comparison_fig = px.bar(
-        comparison_long,
-        x="Feature",
-        y="Value",
-        color="Type",
-        barmode="group",
-        title="Selected Anomaly vs Normal Mean",
-        labels={
-            "Value": "Feature Value",
-            "Feature": "Collision Feature",
-            "Type": "Comparison"
-        }
-    )
-
-    comparison_fig.update_layout(
-        height=450,
-        legend_title="Comparison",
-        margin=dict(
-            l=40,
-            r=40,
-            t=70,
-            b=50
+        not comparison_df.empty
+        and "Feature" in comparison_df.columns
+        and "Selected Anomaly" in comparison_df.columns
+        and "Normal Mean" in comparison_df.columns
+    ):
+        st.dataframe(
+            comparison_df.round(4),
+            use_container_width=True,
+            hide_index=True
         )
-    )
 
-    st.plotly_chart(
-        comparison_fig,
-        use_container_width=True,
-        key="anomaly_normal_comparison"
-    )
+        comparison_long = comparison_df.melt(
+            id_vars="Feature",
+            value_vars=["Selected Anomaly", "Normal Mean"],
+            var_name="Type",
+            value_name="Value"
+        )
+
+        comparison_fig = px.bar(
+            comparison_long,
+            x="Feature",
+            y="Value",
+            color="Type",
+            barmode="group",
+            title="Selected Anomaly vs Normal Mean",
+            labels={
+                "Value": "Feature Value",
+                "Feature": "Collision Feature",
+                "Type": "Comparison"
+            }
+        )
+
+        comparison_fig.update_layout(
+            height=450,
+            legend_title="Comparison",
+            margin=dict(l=40, r=40, t=70, b=50)
+        )
+
+        st.plotly_chart(
+            comparison_fig,
+            use_container_width=True,
+            key="anomaly_normal_comparison"
+        )
+
+    else:
+        st.info("Comparison data is not available for the selected event.")
+
+else:
+    st.info("Comparison features are not available.")
 # ----------------------------
 # Project Information
 # ----------------------------
