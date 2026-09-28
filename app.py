@@ -595,171 +595,138 @@ else:
 # ----------------------------
 
 st.divider()
-
 st.subheader("🧠 Why Is This Event Anomalous?")
 
-if "anomaly_score" in df.columns and "anomaly_label" in df.columns:
+anomaly_events = df[df["anomaly_label"] == -1].copy()
 
-    anomaly_events = df[df["anomaly_label"] == -1].copy()
+if not anomaly_events.empty:
 
-    if not anomaly_events.empty:
+    anomaly_event_ids = anomaly_events["Event"].astype(str).tolist()
 
-        selected_anomaly = st.selectbox(
-            "Select an anomalous event",
-            anomaly_events["Event"].astype(str).tolist(),
-            key="anomaly_explorer"
-        )
+    selected_anomaly = st.selectbox(
+        "Select an Anomalous Event",
+        anomaly_event_ids,
+        key="why_anomalous_event"
+    )
 
-        event_data = anomaly_events[
-            anomaly_events["Event"].astype(str) == selected_anomaly
-        ].iloc[0]
+    event_data = anomaly_events[
+        anomaly_events["Event"].astype(str) == selected_anomaly
+    ].iloc[0]
 
-        st.warning(
-            f"⚠️ Event {selected_anomaly} is classified as an anomaly."
-        )
+    st.warning(
+        f"🚨 Event {selected_anomaly} is classified as ANOMALY"
+    )
 
-        col1, col2 = st.columns(2)
+    col1, col2, col3, col4 = st.columns(4)
 
-        with col1:
-            st.metric(
-                "Anomaly Score",
-                f"{event_data['anomaly_score']:.4f}"
-            )
+    with col1:
+        st.metric("Energy E1", f"{event_data['E1']:.3f}")
 
-        with col2:
-            st.metric(
-                "Invariant Mass",
-                f"{event_data['M']:.4f}"
-            )
-        # ---------------------------------------------------------
-        # Anomaly Score Gauge
-        # ---------------------------------------------------------
+    with col2:
+        st.metric("Energy E2", f"{event_data['E2']:.3f}")
 
-        st.markdown("### 🎯 Anomaly Score")
+    with col3:
+        st.metric("Momentum pt1", f"{event_data['pt1']:.3f}")
 
-        score = float(event_data["anomaly_score"])
+    with col4:
+        st.metric("Invariant Mass", f"{event_data['M']:.3f}")
 
-        gauge_fig = go.Figure(
-            go.Indicator(
-                mode="gauge+number",
-                value=score,
-                title={
-                    "text": "Anomaly Score"
-                },
-                gauge={
-                    "axis": {
-                        "range": [0, 1]
-                    },
-                    "bar": {
-                        "thickness": 0.25
-                    },
-                    "steps": [
-                        {
-                            "range": [0, 0.3],
-                            "name": "Low"
-                        },
-                        {
-                            "range": [0.3, 0.6],
-                            "name": "Medium"
-                        },
-                        {
-                            "range": [0.6, 1],
-                            "name": "High"
-                        }
-                    ],
-                    "threshold": {
-                        "line": {
-                            "width": 4
-                        },
-                        "thickness": 0.75,
-                        "value": score
-                    }
+    st.markdown("### 🎯 Anomaly Score")
+
+    score = float(event_data["anomaly_score"])
+
+    gauge_fig = go.Figure(
+        go.Indicator(
+            mode="gauge+number",
+            value=score,
+            title={"text": "Anomaly Score"},
+            gauge={
+                "axis": {"range": [0, 1]},
+                "bar": {"thickness": 0.25},
+                "steps": [
+                    {"range": [0, 0.3], "name": "Low"},
+                    {"range": [0.3, 0.6], "name": "Medium"},
+                    {"range": [0.6, 1], "name": "High"}
+                ],
+                "threshold": {
+                    "line": {"width": 4},
+                    "thickness": 0.75,
+                    "value": score
                 }
-            )
+            }
         )
+    )
 
-        gauge_fig.update_layout(
-            height=350,
-            margin=dict(l=40, r=40, t=60, b=20)
-        )
+    gauge_fig.update_layout(
+        height=350,
+        margin=dict(l=40, r=40, t=60, b=20)
+    )
 
-        st.plotly_chart(
-            gauge_fig,
-            use_container_width=True,
-            key="anomaly_score_gauge"
-        )
+    st.plotly_chart(
+        gauge_fig,
+        use_container_width=True,
+        key="anomaly_score_gauge"
+    )
 
-        # ---------------------------------------------------------
-        # Feature Values
-        # ---------------------------------------------------------
+    st.markdown("### Feature Values")
 
-        st.markdown("### Feature Values")
+    feature_values = pd.DataFrame({
+        "Feature": ["E1", "E2", "pt1", "pt2", "M"],
+        "Value": [
+            event_data["E1"],
+            event_data["E2"],
+            event_data["pt1"],
+            event_data["pt2"],
+            event_data["M"]
+        ]
+    })
 
-        feature_values = pd.DataFrame({
-            "Feature": ["E1", "E2", "pt1", "pt2", "M"],
-            "Value": [
-                event_data["E1"],
-                event_data["E2"],
-                event_data["pt1"],
-                event_data["pt2"],
-                event_data["M"]
-            ]
-        })
+    st.dataframe(
+        feature_values,
+        use_container_width=True,
+        hide_index=True
+    )
 
-        st.dataframe(
-            feature_values,
-            use_container_width=True,
-            hide_index=True
-        )
+    st.info(
+        "This event was identified as anomalous because its combined "
+        "collision-feature pattern differs from the dominant patterns "
+        "observed in the dataset."
+    )
 
-        st.info(
-            "The anomaly detector identified this event because its combined "
-            "collision-feature pattern differs from the dominant patterns in the dataset."
-        )
-        st.info(
-    "This event was identified as anomalous because its combined "
-    "collision-feature pattern differs from the dominant patterns "
-    "observed in the dataset."
-)
+    st.markdown("### 📊 Comparison with Normal Events")
 
-st.markdown("### 📊 Comparison with Normal Events")
+    comparison_features = ["E1", "E2", "pt1", "pt2", "M"]
 
-comparison_features = ["E1", "E2", "pt1", "pt2", "M"]
-available_features = [
-    feature for feature in comparison_features
-    if feature in df.columns
-]
-
-if available_features:
-    comparison_data = []
     normal_data = df[df["anomaly_label"] == 1]
 
-    for feature in available_features:
-        anomaly_value = pd.to_numeric(
-            event_data[feature],
-            errors="coerce"
-        )
+    comparison_data = []
 
-        normal_values = pd.to_numeric(
-            normal_data[feature],
-            errors="coerce"
-        ).dropna()
+    for feature in comparison_features:
 
-        if not normal_values.empty:
-            comparison_data.append({
-                "Feature": feature,
-                "Selected Anomaly": anomaly_value,
-                "Normal Mean": normal_values.mean()
-            })
+        if feature in df.columns:
+
+            anomaly_value = pd.to_numeric(
+                event_data[feature],
+                errors="coerce"
+            )
+
+            normal_values = pd.to_numeric(
+                normal_data[feature],
+                errors="coerce"
+            ).dropna()
+
+            if not normal_values.empty:
+
+                comparison_data.append({
+                    "Feature": feature,
+                    "Selected Anomaly": anomaly_value,
+                    "Normal Mean": normal_values.mean()
+                })
 
     comparison_df = pd.DataFrame(comparison_data)
 
-    if (
-        not comparison_df.empty
-        and "Feature" in comparison_df.columns
-        and "Selected Anomaly" in comparison_df.columns
-        and "Normal Mean" in comparison_df.columns
-    ):
+    if not comparison_df.empty:
+
         st.dataframe(
             comparison_df.round(4),
             use_container_width=True,
@@ -768,7 +735,10 @@ if available_features:
 
         comparison_long = comparison_df.melt(
             id_vars="Feature",
-            value_vars=["Selected Anomaly", "Normal Mean"],
+            value_vars=[
+                "Selected Anomaly",
+                "Normal Mean"
+            ],
             var_name="Type",
             value_name="Value"
         )
@@ -790,7 +760,12 @@ if available_features:
         comparison_fig.update_layout(
             height=450,
             legend_title="Comparison",
-            margin=dict(l=40, r=40, t=70, b=50)
+            margin=dict(
+                l=40,
+                r=40,
+                t=70,
+                b=50
+            )
         )
 
         st.plotly_chart(
@@ -800,10 +775,77 @@ if available_features:
         )
 
     else:
-        st.info("Comparison data is not available for the selected event.")
+        st.info(
+            "Comparison data is not available for this event."
+        )
 
 else:
-    st.info("Comparison features are not available.")
+
+    st.info(
+        "No anomalous events are available in the current selection."
+    )
+ # ---------------------------------------------------------
+ # Anomaly Score Gauge
+ # ---------------------------------------------------------
+
+st.markdown("### 🎯 Anomaly Score")
+
+score = float(event_data["anomaly_score"])
+
+gauge_fig = go.Figure(
+    go.Indicator(
+        mode="gauge+number",
+        value=score,
+        title={
+            "text": "Anomaly Score"
+        },
+        gauge={
+            "axis": {
+                "range": [0, 1]
+            },
+            "bar": {
+                "thickness": 0.25
+            },
+            "steps": [
+                {
+                    "range": [0, 0.3],
+                    "name": "Low"
+                },
+                {
+                    "range": [0.3, 0.6],
+                    "name": "Medium"
+                },
+                {
+                    "range": [0.6, 1],
+                    "name": "High"
+                }
+            ],
+            "threshold": {
+                "line": {
+                    "width": 4
+                },
+                "thickness": 0.75,
+                "value": score
+            }
+        }
+    )
+)
+
+gauge_fig.update_layout(
+    height=350,
+    margin=dict(
+        l=40,
+        r=40,
+        t=60,
+        b=20
+    )
+)
+
+st.plotly_chart(
+    gauge_fig,
+    use_container_width=True,
+    key="anomaly_score_gauge"
+)
 # ----------------------------
 # Project Information
 # ----------------------------
