@@ -776,15 +776,46 @@ if available_features:
         hide_index=True
     )
 
+    if (
+    not comparison_df.empty
+    and "Feature" in comparison_df.columns
+    and "Selected Anomaly" in comparison_df.columns
+    and "Normal Mean" in comparison_df.columns
+):
     comparison_long = comparison_df.melt(
         id_vars="Feature",
-        value_vars=[
-            "Selected Anomaly",
-            "Normal Mean"
-        ],
+        value_vars=["Selected Anomaly", "Normal Mean"],
         var_name="Type",
         value_name="Value"
     )
+
+    comparison_fig = px.bar(
+        comparison_long,
+        x="Feature",
+        y="Value",
+        color="Type",
+        barmode="group",
+        title="Selected Anomaly vs Normal Mean",
+        labels={
+            "Value": "Feature Value",
+            "Feature": "Collision Feature",
+            "Type": "Comparison"
+        }
+    )
+
+    comparison_fig.update_layout(
+        height=450,
+        legend_title="Comparison",
+        margin=dict(l=40, r=40, t=70, b=50)
+    )
+
+    st.plotly_chart(
+        comparison_fig,
+        use_container_width=True,
+        key="anomaly_normal_comparison"
+    )
+else:
+    st.info("Comparison data is not available for the selected event.")
 
     comparison_fig = px.bar(
         comparison_long,
