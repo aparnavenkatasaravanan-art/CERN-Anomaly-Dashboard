@@ -780,11 +780,9 @@ if not anomaly_events.empty:
         )
 
 else:
-
     st.info(
         "No anomalous events are available in the current selection."
     )
-)
 # ----------------------------
 # Project Information
 # ----------------------------
