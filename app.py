@@ -784,67 +784,6 @@ else:
     st.info(
         "No anomalous events are available in the current selection."
     )
-# ---------------------------------------------------------
-# Anomaly Score Gauge
-# ---------------------------------------------------------
-
-st.markdown("### 🎯 Anomaly Score")
-
-score = float(event_data["anomaly_score"])
-
-gauge_fig = go.Figure(
-    go.Indicator(
-        mode="gauge+number",
-        value=score,
-        title={
-            "text": "Anomaly Score"
-        },
-        gauge={
-            "axis": {
-                "range": [0, 1]
-            },
-            "bar": {
-                "thickness": 0.25
-            },
-            "steps": [
-                {
-                    "range": [0, 0.3],
-                    "name": "Low"
-                },
-                {
-                    "range": [0.3, 0.6],
-                    "name": "Medium"
-                },
-                {
-                    "range": [0.6, 1],
-                    "name": "High"
-                }
-            ],
-            "threshold": {
-                "line": {
-                    "width": 4
-                },
-                "thickness": 0.75,
-                "value": score
-            }
-        }
-    )
-)
-
-gauge_fig.update_layout(
-    height=350,
-    margin=dict(
-        l=40,
-        r=40,
-        t=60,
-        b=20
-    )
-)
-
-st.plotly_chart(
-    gauge_fig,
-    use_container_width=True,
-    key="anomaly_score_gauge"
 )
 # ----------------------------
 # Project Information
