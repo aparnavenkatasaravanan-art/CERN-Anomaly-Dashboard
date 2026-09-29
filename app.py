@@ -500,7 +500,11 @@ st.subheader("🔎 Event Explorer")
 
 if "Event" in df.columns:
 
-    event_list = df["Event"].astype(str).tolist()
+    event_list = (
+    df[df["anomaly_label"] == -1]["Event"]
+    .astype(str)
+    .tolist()
+)
 
     selected_event = st.selectbox(
         "Select an Event ID",
